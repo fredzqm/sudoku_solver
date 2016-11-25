@@ -1,20 +1,19 @@
 import sys
-from Queue import PriorityQueue
+import copy
+import queue
 
 class sudoku:
     def __init__(self, givenData):
         self.given = givenData  # store start configuration
-        self.found = []  # store the current reached configuration
-        self.possibles = []  # store the list of possibilities in each position
+        self.found = copy.deepcopy(givenData)   # store the current reached configuration
+        self.possibles = [[set() for x in range(9)] for y in range(9)]  # store the list of possibilities in each position
+        fullSet = set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
         for i in range(0 , 9):
-            self.found.append([])
-            self.possibles.append([])
             for j in range(0 , 9):
-                self.found[i].append(self.given[i][j])
                 if self.given[i][j] == 0:
-                    self.possibles[i].append(set([1, 2, 3, 4, 5, 6, 7, 8, 9]))
+                    self.possibles[i][j] = copy.deepcopy(fullSet);
                 else:
-                    self.possibles[i].append(set([self.given[i][j]]))
+                    self.possibles[i][j].add(self.given[i][j])
     
     def solve(self):
         changed = True
@@ -29,7 +28,7 @@ class sudoku:
                         for t in range(0 , 9):
                             if t != j and num in self.possibles[i][t]:
                                 if num == self.found[i][t]:
-                                    return None 
+                                    return None
                                 else:
                                     self.possibles[i][t].remove(num)
                             
@@ -46,6 +45,7 @@ class sudoku:
                                     return None
                                 else:
                                     self.possibles[mx][ny].remove(num)
+            
             # Examine each digit for each row, column and square, and simplify problem based on 
             # the rule that there has to be at least each digit in each row, column and ssquare
             for num in range(1 , 10):
@@ -65,22 +65,22 @@ class sudoku:
                         changed = True
                         self.found[pt[0][0]][pt[0][1]] = num
                         self.possibles[pt[0][0]][pt[0][1]] = set([num])
-                    elif ct > 1:
-                        r = pt[0][0] // 3
-                        for p in pt:
-                            if r != p[0] // 3:
-                                r = -1
-                                break
-                        if r >= 0:
-                            m = r * 3
-                            n = (i // 3) * 3
-                            for t in range(0 , 9):
-                                mx = m + t % 3
-                                ny = n + t // 3
-                                if ny != i and num in self.possibles[mx][ny]:
-                                    if self.found[mx][ny] == num:
-                                        return None
-                                    self.possibles[mx][ny].remove(num)
+                    # elif ct > 1:
+                    #     r = pt[0][0] // 3
+                    #     for p in pt:
+                    #         if r != p[0] // 3:
+                    #             r = -1
+                    #             break
+                    #     if r >= 0:
+                    #         m = r * 3
+                    #         n = (i // 3) * 3
+                    #         for t in range(0 , 9):
+                    #             mx = m + t % 3
+                    #             ny = n + t // 3
+                    #             if ny != i and num in self.possibles[mx][ny]:
+                    #                 if self.found[mx][ny] == num:
+                    #                     return None
+                    #                 self.possibles[mx][ny].remove(num)
                     
                     pt = []
                     ct = 0
@@ -97,22 +97,22 @@ class sudoku:
                         changed = True
                         self.found[pt[0][0]][pt[0][1]] = num
                         self.possibles[pt[0][0]][pt[0][1]] = set([num])
-                    elif ct > 1:
-                        c = pt[0][1] // 3
-                        for p in pt:
-                            if c != p[1] // 3:
-                                c = -1
-                                break
-                        if c > 0:
-                            m = (i // 3) * 3
-                            n = c * 3
-                            for t in range(0 , 9):
-                                mx = m + t % 3
-                                ny = n + t // 3
-                                if mx != i and num in self.possibles[mx][ny]:
-                                    if self.found[mx][ny] == num:
-                                        return None
-                                    self.possibles[mx][ny].remove(num)
+                    # elif ct > 1:
+                    #     c = pt[0][1] // 3
+                    #     for p in pt:
+                    #         if c != p[1] // 3:
+                    #             c = -1
+                    #             break
+                    #     if c > 0:
+                    #         m = (i // 3) * 3
+                    #         n = c * 3
+                    #         for t in range(0 , 9):
+                    #             mx = m + t % 3
+                    #             ny = n + t // 3
+                    #             if mx != i and num in self.possibles[mx][ny]:
+                    #                 if self.found[mx][ny] == num:
+                    #                     return None
+                    #                 self.possibles[mx][ny].remove(num)
                                         
                     pt = []
                     ct = 0
@@ -132,31 +132,32 @@ class sudoku:
                         changed = True
                         self.found[pt[0][0]][pt[0][1]] = num
                         self.possibles[pt[0][0]][pt[0][1]] = set([num])
-                    elif ct > 1:
-                        r = pt[0][0]
-                        for p in pt:
-                            if r != p[0]:
-                                r = -1
-                                break
-                        if r >= 0:
-                            n = i // 3
-                            for t in range(0 , 9):
-                                if t // 3 != n and num in self.possibles[r][t]:
-                                    if self.found[r][t] == num:
-                                        return None 
-                                    self.possibles[r][t].remove(num)
-                        c = pt[0][1]
-                        for p in pt:
-                            if c != p[1]:
-                                c = -1
-                                break
-                        if c >= 0:
-                            m = i % 3
-                            for t in range(0 , 9):
-                                if t // 3 != m and num in self.possibles[t][c]:
-                                    if self.found[t][c] == num:
-                                        return None 
-                                    self.possibles[t][c].remove(num)
+                    # elif ct > 1:
+                    #     r = pt[0][0]
+                    #     for p in pt:
+                    #         if r != p[0]:
+                    #             r = -1
+                    #             break
+                    #     if r >= 0:
+                    #         n = i // 3
+                    #         for t in range(0 , 9):
+                    #             if t // 3 != n and num in self.possibles[r][t]:
+                    #                 if self.found[r][t] == num:
+                    #                     return None 
+                    #                 self.possibles[r][t].remove(num)
+                    #     c = pt[0][1]
+                    #     for p in pt:
+                    #         if c != p[1]:
+                    #             c = -1
+                    #             break
+                    #     if c >= 0:
+                    #         m = i % 3
+                    #         for t in range(0 , 9):
+                    #             if t // 3 != m and num in self.possibles[t][c]:
+                    #                 if self.found[t][c] == num:
+                    #                     return None 
+                    #                 self.possibles[t][c].remove(num)
+
             # collect those positions with only one possibility                    
             for i in range(0 , 9):
                 for j in range(0 , 9):
@@ -198,7 +199,7 @@ class sudoku:
             return self
         
         # order choices in PQ according to the constraining value
-        quene = PriorityQueue()
+        qp = queue.PriorityQueue()
         for choice in self.possibles[pos[0]][pos[1]]:
             m , n = (i // 3) * 3 , (j // 3) * 3
             invol = 0
@@ -214,17 +215,14 @@ class sudoku:
                 if (mx != i and ny != j) and num in self.possibles[mx][ny]:
                     if choice in self.possibles[mx][ny]:
                         invol += 1
-            quene.put((invol , choice))
+            qp.put((invol , choice))
             
         # start backtracking
-        while quene.qsize() > 0:
-            choice = quene.get()[1]
+        while qp.qsize() > 0:
+            choice = qp.get()[1]
             nextSudoku = sudoku(self.found)
             nextSudoku.found[pos[0]][pos[1]] = choice
             nextSudoku.possibles[pos[0]][pos[1]] = set([choice])
-#             nextSudoku.level = self.level + 1
-#             print 'Level:  ' + str(self.level)
-#             print nextSudoku
             sol = nextSudoku.solve()
             if sol != None:
                 return sol
@@ -295,12 +293,12 @@ if __name__ == "__main__":
     
     game = sudoku(initialData)
 #     game.level = 1
-    print "start game:"
-    print game
+    print("start game:")
+    print(game)
     sol = game.solve()
-    print "Solution:"
-    print sol
+    print("Solution:")
+    print(sol)
     if sol == None:
-        print "No solution exit"
+        print("No solution exit")
     else:
-        print sol.check()
+        print(sol.check())
