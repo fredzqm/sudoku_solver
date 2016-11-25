@@ -15,7 +15,7 @@ class sudoku:
             for j in range(0 , 9):
                 if givenData[i][j] != 0:
                     self.setValue(i, j, givenData[i][j])
-    
+                
     def setValue(self, i, j, n):
         self.found[i][j] = n;
         self.hori[i].remove(n);
@@ -28,154 +28,30 @@ class sudoku:
     def solve(self):
         changed = True
         while(changed):
+            minPos, mini, minj = fullSet, -1, -1
             changed = False
-            # check if there is any conflict and rule out those possibilities that lead to contradiction
+            pos = 0
             for i in range(0 , 9):
                 for j in range(0 , 9):
-                    num = self.found[i][j]
-                    if num != 0:
-                        m , n = (i // 3) * 3 , (j // 3) * 3
-                        for t in range(0 , 9):
-                            if t != j and num in self.possibles[i][t]:
-                                if num == self.found[i][t]:
-                                    return None
-                                else:
-                                    self.possibles[i][t].remove(num)
-                            
-                            if t != i and num in self.possibles[t][j]:
-                                if num == self.found[t][j]:
-                                    return None
-                                else:
-                                    self.possibles[t][j].remove(num)
-                            
-                            mx = m + t % 3
-                            ny = n + t // 3
-                            if (mx != i and ny != j) and num in self.possibles[mx][ny]:
-                                if num == self.found[mx][ny]:
-                                    return None
-                                else:
-                                    self.possibles[mx][ny].remove(num)
-            
-            # Examine each digit for each row, column and square, and simplify problem based on 
-            # the rule that there has to be at least each digit in each row, column and ssquare
-            for num in range(1 , 10):
-                for i in range(0 , 9):
-                    pt = []
-                    ct = 0
-                    # check for the row
-                    for k in range(0 , 9):
-                        if num in self.possibles[k][i] :
-                            if self.found[k][i] == num:
-                                ct = 0
-                                break
-                            else:
-                                ct += 1
-                                pt.append((k , i))
-                    if ct == 1:
-                        changed = True
-                        self.found[pt[0][0]][pt[0][1]] = num
-                        self.possibles[pt[0][0]][pt[0][1]] = set([num])
-                    
-                    pt = []
-                    ct = 0
-                    # check for the column
-                    for k in range(0 , 9):
-                        if num in self.possibles[i][k]:
-                            if self.found[i][k] == num:
-                                ct = 0
-                                break
-                            else:
-                                ct += 1
-                                pt.append((i , k))
-                    if ct == 1:
-                        changed = True
-                        self.found[pt[0][0]][pt[0][1]] = num
-                        self.possibles[pt[0][0]][pt[0][1]] = set([num])
-                                        
-                    pt = []
-                    ct = 0
-                    # check for the square
-                    m , n = (i % 3) * 3 , (i // 3) * 3
-                    for k in range(0 , 9):
-                        mx = m + (k % 3)
-                        ny = n + (k // 3)
-                        if num in self.possibles[mx][ny] :
-                            if  self.found[mx][ny] == num:
-                                ct = 0
-                                break
-                            else:
-                                ct += 1
-                                pt.append((mx , ny))
-                    if ct == 1:
-                        changed = True
-                        self.found[pt[0][0]][pt[0][1]] = num
-                        self.possibles[pt[0][0]][pt[0][1]] = set([num])
-
-            # collect those positions with only one possibility                    
-            for i in range(0 , 9):
-                for j in range(0 , 9):
-                    if self.found[i][j] == 0 and len(self.possibles[i][j]) <= 1:
-                        if len(self.possibles[i][j]) < 1:
+                    if self.found[i][j] == 0:
+                        pos = self.getPosible(i, j)
+                        if (len(pos) == 0):
                             return None
-                        changed = True
-                        num = list(self.possibles[i][j])[0]
-                        self.found[i][j] = num
-                        self.possibles[i][j] = set([num])
-            
-        # to choose the position with least variation, most involvement to start backtracking
-        minLen = 10
-        maxInvol = 0
-        pos = None
-        for i in range(0 , 9):
-            for j in range(0 , 9):
-                l = len(self.possibles[i][j])
-                if l > 1 and l <= minLen:
-                    invol = 0 
-                    m , n = (i // 3) * 3 , (j // 3) * 3
-                    for t in range(0 , 9):
-                        if t != j and num in self.possibles[i][t]:
-                            if 0 == self.found[i][t]:
-                                invol += 1
-                        if t != i and num in self.possibles[t][j]:
-                            if 0 == self.found[t][j]:
-                                invol += 1
-                        mx = m + t % 3
-                        ny = n + t // 3
-                        if (mx != i and ny != j) and num in self.possibles[mx][ny]:
-                            if 0 == self.found[mx][ny]:
-                                invol += 1
-                    if l < minLen or invol > maxInvol :
-                        l = minLen
-                        maxInvol = invol
-                        pos = (i , j)
-        if pos == None:
-            return self
+                        elif (len(pos) == 1):
+                            self.setValue(i, j, pos.pop())
+                            changed = True
+                        else:
+                            if len(pos) < len(minPos):
+                                minPos, mini, minj = pos, i, j
         
-        # order choices in PQ according to the constraining value
-        qp = queue.PriorityQueue()
-        for choice in self.possibles[pos[0]][pos[1]]:
-            m , n = (i // 3) * 3 , (j // 3) * 3
-            invol = 0
-            for t in range(0 , 9):
-                if t != j and num in self.possibles[i][t]:
-                    if choice in self.possibles[i][t]:
-                        invol += 1
-                if t != i and num in self.possibles[t][j]:
-                    if choice in self.possibles[t][j]:
-                        invol += 1
-                mx = m + t % 3
-                ny = n + t // 3
-                if (mx != i and ny != j) and num in self.possibles[mx][ny]:
-                    if choice in self.possibles[mx][ny]:
-                        invol += 1
-            qp.put((invol , choice))
-            
+        # return if all positions are filled
+        if pos == 0:
+            return self;
+
         # start backtracking
-        while qp.qsize() > 0:
-            choice = qp.get()[1]
-            nextSudoku = sudoku(self.found)
-            nextSudoku.found[pos[0]][pos[1]] = choice
-            nextSudoku.possibles[pos[0]][pos[1]] = set([choice])
+        for x in minPos:
+            nextSudoku = copy.deepcopy(self)
+            nextSudoku.setValue(mini, minj, x)
             sol = nextSudoku.solve()
             if sol != None:
                 return sol
