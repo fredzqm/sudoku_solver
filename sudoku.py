@@ -6,16 +6,25 @@ fullSet = set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
 class sudoku:
     def __init__(self, givenData):
-        self.given = givenData  # store start configuration
-        self.found = copy.deepcopy(givenData)   # store the current reached configuration
-        self.possibles = [[set() for x in range(9)] for y in range(9)]  # store the list of possibilities in each position
+        self.found = [[0]*9 for i in range(9)]   # store the current reached configuration
+        self.hori = [fullSet.copy() for i in range(9)]
+        self.vert = [fullSet.copy() for i in range(9)]
+        self.squa = [fullSet.copy() for i in range(9)]
+
         for i in range(0 , 9):
             for j in range(0 , 9):
-                if self.given[i][j] == 0:
-                    self.possibles[i][j] = copy.deepcopy(fullSet);
-                else:
-                    self.possibles[i][j].add(self.given[i][j])
+                if givenData[i][j] != 0:
+                    self.setValue(i, j, givenData[i][j])
     
+    def setValue(self, i, j, n):
+        self.found[i][j] = n;
+        self.hori[i].remove(n);
+        self.vert[j].remove(n);
+        self.squa[i//3*3+j//3].remove(n);
+
+    def getPosible(self, i, j):
+        return self.hori[i] & self.vert[j] & self.squa[i//3*3+j//3];
+
     def solve(self):
         changed = True
         while(changed):
@@ -217,7 +226,11 @@ if __name__ == "__main__":
     lines = reader.readlines()
     initialData = [[int(line[i]) for i in range(9)] for line in lines]
     
-    game = sudoku(initialData)
+    try:
+        game = sudoku(initialData)
+    except KeyError:
+        print("initial state is not valid!")
+        exit(0)
     print("start game:")
     print(game)
     print()
