@@ -204,22 +204,9 @@ class sudoku:
         return 'Pass'
 
     def __repr__(self):
-        s = ""
-        for j in range(0 , 9):
-            for i in range(0 , 9):
-                s += str(self.possibles[j][i])
-            s += '\n'
-        return s
+        return "\n".join(["".join([str(i) for i in line]) for line in self.found])
     
-    def __str__(self):
-        s = ''
-        for i in range(0 , 9):
-            for j in range(0 , 9):
-                s += str(self.found[i][j]) 
-            s += '\n'
-        return s
-    
-    
+
 # use this program by running python sudoku.py file.txt
 # file.txt containst the 9x9 configuration of a sudoku game.
 # eg:    python sudoku.py sudoku_hardest.txt
@@ -233,9 +220,11 @@ if __name__ == "__main__":
     game = sudoku(initialData)
     print("start game:")
     print(game)
+    print()
     sol = game.solve()
     print("Solution:")
     print(sol)
+    print()
     if sol == None:
         print("No solution exit")
     else:
