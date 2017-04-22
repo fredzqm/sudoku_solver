@@ -2,18 +2,19 @@ import sys
 import copy
 import queue
 
-fullSet = set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+FULLSET = set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+EMPTY = 0
 
 class sudoku:
     def __init__(self, givenData):
         self.found = [[0]*9 for i in range(9)]   # store the current reached configuration
-        self.hori = [fullSet.copy() for i in range(9)]
-        self.vert = [fullSet.copy() for i in range(9)]
-        self.squa = [fullSet.copy() for i in range(9)]
+        self.hori = [FULLSET.copy() for i in range(9)]
+        self.vert = [FULLSET.copy() for i in range(9)]
+        self.squa = [FULLSET.copy() for i in range(9)]
 
         for i in range(0 , 9):
             for j in range(0 , 9):
-                if givenData[i][j] != 0:
+                if givenData[i][j] != EMPTY:
                     self.setValue(i, j, givenData[i][j])
                 
     def setValue(self, i, j, n):
@@ -28,12 +29,11 @@ class sudoku:
     def solve(self):
         changed = True
         while(changed):
-            minPos, mini, minj = fullSet, -1, -1
             changed = False
-            pos = 0
+            minPos = FULLSET
             for i in range(0 , 9):
                 for j in range(0 , 9):
-                    if self.found[i][j] == 0:
+                    if self.found[i][j] == EMPTY:
                         pos = self.getPosible(i, j)
                         if (len(pos) == 0):
                             return None
@@ -45,7 +45,7 @@ class sudoku:
                                 minPos, mini, minj = pos, i, j
         
         # return if all positions are filled
-        if pos == 0:
+        if minPos == FULLSET:
             return self;
 
         # start backtracking
